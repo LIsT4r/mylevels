@@ -1,0 +1,57 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="robots" content="noindex, nofollow">
+  <title>mylevels - 이동 중</title>
+  <style>
+    body{margin:0;min-height:100vh;display:grid;place-items:center;background:#0f172a;color:#e2e8f0;font:16px system-ui,sans-serif}
+    main{text-align:center;padding:28px}
+    .spinner{width:28px;height:28px;border:3px solid #64748b;border-top-color:#fff;border-radius:50%;animation:spin .7s linear infinite;margin:0 auto 22px}
+    @keyframes spin{to{transform:rotate(360deg)}}
+    a{color:#93c5fd}
+  </style>
+</head>
+<body>
+<main>
+  <div class="spinner" aria-hidden="true"></div>
+  <p>Google Drive로 이동하는 중입니다...</p>
+  <p><a id="fallback" href="https://drive.google.com/drive/u/1/folders/1g-aynLi9qn5fBR6TVQ1JwMEYrI6d9-YE">자동으로 이동하지 않으면 여기를 누르세요.</a></p>
+</main>
+<script>
+  // Apps Script 배포에서 복사한 웹 앱 URL(/exec로 끝남)을 입력하세요.
+  const WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbwhd_XLeo3ONx49UIEUOVvguCh6_7sZv1Dd-ougTnrWuLfO_AbgWhOnS2_t2nGjPrMfjQ/exec';
+  const DRIVE_URL = 'https://drive.google.com/drive/u/1/folders/1g-aynLi9qn5fBR6TVQ1JwMEYrI6d9-YE';
+
+  async function run() {
+    try {
+      if (!WEB_APP_URL.startsWith('https://script.google.com/macros/s/')) {
+        throw new Error('WEB_APP_URL을 설정하세요');
+      }
+      // 도메인이 다르므로 no-cors 모드. 응답 본문과 서버 성공 여부를 확인할 수 없습니다.
+      // 통신이 장시간 걸릴 때의 탈출을 위해 타임아웃을 둡니다.
+      const controller = new AbortController();
+      const timeout = setTimeout(() => controller.abort(), 8000);
+      try {
+        await fetch(WEB_APP_URL, {
+          method: 'POST',
+          mode: 'no-cors',
+          headers: {'Content-Type': 'text/plain'},
+          body: 'visit',
+          cache: 'no-store',
+          signal: controller.signal
+        });
+      } finally {
+        clearTimeout(timeout);
+      }
+    } catch (err) {
+      console.warn('방문 기록 결과를 확인하지 못했습니다:', err);
+    } finally {
+      window.location.replace(DRIVE_URL);
+    }
+  }
+  run();
+</script>
+</body>
+</html>
